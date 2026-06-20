@@ -5,6 +5,20 @@
 // İçerik Veritabanı (CMS çıktısı buraya yapıştırılır)
 const blogDatabase = [
     {
+        id: "yeni-yazi",
+        title: "2026 Dünya Kupası’nın Gerçek Yıldızları: Sahayı Ördekler Bastı!",
+        category: "Sosyal Medya",
+        isTrend: true,
+        isHeadline: true,
+        date: "20 Haziran 2026",
+        views: "0",
+        thumbnail: "https://riouribe.com/product/mexico-national-team-fifa-world-cup-2026-pato-mundialista-plush-9777925/",
+        excerpt: "2026 FIFA Dünya Kupası yeşil sahalardan çok uzak, son derece sempatik bir olayla çalkalanıyor: Özel formalarıyla tribünleri ele geçiren fenomen taraftar ördekler Merlin ve Dawn ile tanışın!",
+        blocks: [
+            { type: "text", content: "<p>2026 Dünya Kupası’nın Gerçek Yıldızları: Sahayı<br>Ördekler Bastı!<br>Dünyanın dört bir yanındaki futbol devlerinin amansız mücadelesine sahne olan 2026 FIFA Dünya<br>Kupası, şu son saatlerde yeşil sahalardan çok uzak, son derece sempatik ve sıra dışı bir olayla<br>çalkalanıyor: Taraftar Ördekler!<br>Dev stadyumların, taktik savaşlarının ve milyon dolarlık yıldızların gölgesinde kalan bu sevimli dostlar,<br>turnuvanın resmi olmayan yeni maskotları haline gelerek sosyal medyanın ve taraftarların sevgilisi<br>oldu.<br>Meksika Formasıyla Tur Atan "Merlin" ve İskoçların Yoldaşı "Dawn"<br>Turnuva heyecanı Kuzey Amerika'yı sarmışken, son saatlerde maç önü geçit törenlerine ve galibiyet<br>kutlamalarına damga vuran iki evcil ördek, dünya basınının ve taraftarların ilgi odağı haline geldi:<br>Merlin: Mexico City'de yaşayan ve sahibinin kendisi için özel olarak hazırladığı minyatür Meksika<br>milli takım formasını giyen bu sevimli ördek, Meksika'nın galibiyet kutlamalarında caddelerin<br>yıldızı oldu. Kendisine özel tasarlanan minik ördek ayakkabılarıyla taraftarların arasında dolaşan<br>Merlin, turnuvanın en çok paylaşılan yüzlerinden biri haline geldi.<br>Dawn: Providence, Rhode Island'dan gelen ve Instagram'da şimdiden on binlerce takipçiye ulaşan<br>fenomen ördek Dawn ise son saatlerde oynanan Fas - İskoçya maçı öncesinde sahnedeydi. İskoç<br>taraftarların geleneksel gayda eşliğindeki coşkulu geçit törenine, gagasında taşıdığı İskoçya<br>bayrağı ve boynundaki altın madalyasıyla katılan Dawn, taraftarlarla birlikte kusursuz bir uyum<br>içinde yürüyerek turnuvanın neşesi oldu.<br>Futbolun Gergin Havasına Sempatik Bir Mola<br>Büyük futbol turnuvalarının getirdiği gergin ve stresli atmosferi bir anda dağıtan bu "tüylü taraftarlar",<br>tribünlerdeki ve sokaklardaki binlerce insana eğlenceli anlar yaşatmaya devam ediyor. Sosyal<br>•<br><br>•<br><br>medyada şimdiden milyonlarca izlenmeye ulaşan Merlin ve Dawn, 2026 Dünya Kupası'nın sadece<br>futboldan ibaret olmadığını, aynı zamanda dünyayı birleştiren neşeli bir karnaval olduğunu tüm<br>dünyaya bir kez daha hatırlatıyor.</p>" },
+            { type: "image", url: "https://riouribe.com/wp-content/uploads/2026/06/Mexico-National-Team-FIFA-World-Cup-2026-Pato-Mundialista-Plush-Z6QIbIxtXi.jpg" }
+        ]
+    },
         id: "apple-2026-etkinlik-beklentileri",
         title: "Apple 2026 Etkinliğinde Neler Tanıtılacak? 5 Büyük Yenilik",
         category: "Teknoloji",
