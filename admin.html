@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitoox CMS — İçerik Yönetimi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="logo"><div class="logo-icon">⚙️</div>Kitoox CMS</div>
+            <a href="index.html" class="btn-primary" style="padding: 8px 16px; font-size: 14px;">Ana Siteye Git</a>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <div class="admin-card">
+            <h1 class="admin-title">Yeni Haber / İçerik Oluştur</h1>
+            
+            <!-- TEMEL BİLGİLER -->
+            <div class="form-group">
+                <label class="form-label">URL Kimliği (İngilizce harfler ve tire, örn: yeni-iphone-sizintisi)</label>
+                <input type="text" id="postId" class="form-control" placeholder="yeni-iphone-sizintisi">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Başlık</label>
+                <input type="text" id="postTitle" class="form-control" placeholder="Haberin çarpıcı başlığı...">
+            </div>
+
+            <div style="display: flex; gap: 20px;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Kategori</label>
+                    <select id="postCat" class="form-control">
+                        <option value="Teknoloji">Teknoloji</option>
+                        <option value="Oyun">Oyun</option>
+                        <option value="Donanım">Donanım</option>
+                        <option value="Sosyal Medya">Sosyal Medya</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Seçenekler</label>
+                    <div style="display: flex; gap: 16px; margin-top: 10px;">
+                        <label style="font-weight: 600;"><input type="checkbox" id="postTrend"> 🔥 Trend Haber</label>
+                        <label style="font-weight: 600;"><input type="checkbox" id="postHeadline" checked> ⭐️ Manşet</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Manşet Görseli Linki (Ana sayfada görünecek fotoğraf)</label>
+                <input type="text" id="postThumb" class="form-control" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Özet (Ana sayfada başlığın altında görünecek kısa yazı)</label>
+                <textarea id="postExcerpt" class="form-control" rows="3" placeholder="Özet metni buraya yazın..."></textarea>
+            </div>
+
+            <!-- BLOK DÜZENLEYİCİ (Gelişmiş Kısım) -->
+            <div class="builder-area">
+                <h2 class="admin-title" style="font-size: 20px; margin-bottom: 16px; border: none; padding: 0;">İçerik Blokları</h2>
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Makalenizi parça parça oluşturun. Önce bir metin ekleyin, altına resim ekleyin, onun altına video ekleyin.</p>
+                
+                <div class="builder-toolbar">
+                    <button class="btn-block" onclick="addBlock('text')">📝 Metin Ekle</button>
+                    <button class="btn-block" onclick="addBlock('title2')">H2 Alt Başlık Ekle</button>
+                    <button class="btn-block" onclick="addBlock('image')">🖼️ Resim Ekle</button>
+                    <button class="btn-block" onclick="addBlock('youtube')">▶️ YouTube Ekle</button>
+                    <button class="btn-block" onclick="addBlock('audio')">🎧 Ses Dosyası Ekle</button>
+                </div>
+
+                <div class="blocks-container" id="blocksContainer">
+                    <!-- Dinamik bloklar buraya gelecek -->
+                </div>
+            </div>
+
+            <!-- ÇIKTI ALMA -->
+            <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);">
+                <button class="btn-primary" onclick="generateCode()" style="width: 100%; justify-content: center;">🚀 Haberin Kodunu Oluştur (app.js için)</button>
+            </div>
+
+            <div id="exportArea">
+                <p style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">Aşağıdaki kodu kopyalayıp app.js dosyasındaki blogDatabase dizisinin İÇİNE EN ÜSTE yapıştırın:</p>
+                <textarea id="exportCode" readonly></textarea>
+                <button class="btn-block" onclick="copyCode()" style="margin-top: 12px;">📋 Kodu Kopyala</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Admin Panel Logic -->
+    <script>
+        let blockCounter = 0;
+
+        // Sayfa açılışında otomatik 1 metin bloğu ekleyelim
+        window.onload = () => addBlock('text');
+
+        function addBlock(type) {
+            blockCounter++;
+            const id = 'block_' + blockCounter;
+            const container = document.getElementById('blocksContainer');
+            
+            const div = document.createElement('div');
+            div.className = 'editor-block';
+            div.id = id;
+
+            let typeLabel = '';
+            let inputsHtml = '';
+
+            if (type === 'text') {
+                typeLabel = 'PARAGRAF METNİ';
+                inputsHtml = `<textarea class="form-control block-val" rows="4" placeholder="Metninizi yazın..."></textarea>`;
+            } else if (type === 'title2') {
+                typeLabel = 'H2 ALT BAŞLIK';
+                inputsHtml = `<input type="text" class="form-control block-val" placeholder="Ara başlık yazın...">`;
+            } else if (type === 'image') {
+                typeLabel = 'GÖRSEL';
+                inputsHtml = `
+                    <input type="text" class="form-control block-val" placeholder="Görsel Linki (https://...)">
+                    <input type="text" class="form-control block-caption" placeholder="Görsel alt yazısı (İsteğe bağlı)" style="margin-top:8px;">
+                `;
+            } else if (type === 'youtube') {
+                typeLabel = 'YOUTUBE VİDEOSU';
+                inputsHtml = `<input type="text" class="form-control block-val" placeholder="YouTube Embed Linki (Örn: https://www.youtube.com/embed/XXXX)">`;
+            } else if (type === 'audio') {
+                typeLabel = 'SES DOSYASI';
+                inputsHtml = `<input type="text" class="form-control block-val" placeholder="Ses Dosyası Linki (Örn: https://.../ses.mp3)">`;
+            }
+
+            div.innerHTML = `
+                <div class="block-handle">≡</div>
+                <div class="block-content-edit" data-type="${type}">
+                    <span class="block-type-label">${typeLabel}</span>
+                    ${inputsHtml}
+                </div>
+                <button class="btn-remove-block" onclick="removeBlock('${id}')" title="Bu bloğu sil">✖</button>
+            `;
+            
+            container.appendChild(div);
+        }
+
+        function removeBlock(id) {
+            document.getElementById(id).remove();
+        }
+
+        function generateCode() {
+            const id = document.getElementById('postId').value || 'yeni-yazi';
+            const title = document.getElementById('postTitle').value || 'Başlıksız Haber';
+            const cat = document.getElementById('postCat').value;
+            const isTrend = document.getElementById('postTrend').checked;
+            const isHead = document.getElementById('postHeadline').checked;
+            const thumb = document.getElementById('postThumb').value;
+            const excerpt = document.getElementById('postExcerpt').value;
+            
+            // Tarih (Örn: 21 Haziran 2026)
+            const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Blokları topla
+            const blocks = [];
+            const blockElements = document.querySelectorAll('.block-content-edit');
+            
+            blockElements.forEach(el => {
+                const type = el.getAttribute('data-type');
+                const val = el.querySelector('.block-val').value;
+                if (!val) return; // Boşsa atla
+
+                if (type === 'text') {
+                    blocks.push(`{ type: "text", content: "<p>${val.replace(/\n/g, '<br>')}</p>" }`);
+                } else if (type === 'title2') {
+                    blocks.push(`{ type: "text", content: "<h2>${val}</h2>" }`);
+                } else if (type === 'image') {
+                    const caption = el.querySelector('.block-caption').value;
+                    let capStr = caption ? `, caption: "${caption}"` : '';
+                    blocks.push(`{ type: "image", url: "${val}"${capStr} }`);
+                } else if (type === 'youtube') {
+                    blocks.push(`{ type: "youtube", url: "${val}" }`);
+                } else if (type === 'audio') {
+                    blocks.push(`{ type: "audio", url: "${val}" }`);
+                }
+            });
+
+            // JSON String oluştur
+            const code = `    {
+        id: "${id}",
+        title: "${title}",
+        category: "${cat}",
+        isTrend: ${isTrend},
+        isHeadline: ${isHead},
+        date: "${dateStr}",
+        views: "0",
+        thumbnail: "${thumb}",
+        excerpt: "${excerpt.replace(/\n/g, ' ')}",
+        blocks: [
+            ${blocks.join(',\n            ')}
+        ]
+    },`;
+
+            document.getElementById('exportCode').value = code;
+            document.getElementById('exportArea').style.display = 'block';
+        }
+
+        function copyCode() {
+            const code = document.getElementById('exportCode').value;
+            navigator.clipboard.writeText(code);
+            alert("Kod kopyalandı! Şimdi app.js dosyasına yapıştırabilirsiniz.");
+        }
+    </script>
+</body>
+</html>

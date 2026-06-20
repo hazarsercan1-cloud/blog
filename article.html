@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haber — Kitoox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Menü -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">⚡</div>
+                Kitoox
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Haberler</a>
+                <a href="#" class="nav-link">Teknoloji</a>
+                <a href="#" class="nav-link">Oyun</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 1000px;">
+        <header class="article-header">
+            <div style="margin-bottom: 16px;"><span id="artCategory" class="category-tag">Kategori</span></div>
+            <h1 class="article-title" id="artTitle">Haber Başlığı Yükleniyor...</h1>
+            <div class="article-meta">
+                <div class="article-meta-item" id="artDate">📅 --</div>
+                <div class="article-meta-item" id="artViews">👁️ --</div>
+                <div class="article-meta-item">✍️ Kitoox Editör</div>
+            </div>
+        </header>
+
+        <img src="" id="artHeroImg" class="article-hero-img" alt="Haber Görseli">
+
+        <article class="article-content" id="artContent">
+            <!-- Dinamik bloklar (metin, resim, youtube) buraya gelecek -->
+        </article>
+        
+        <!-- Yazar ve Paylaş Kutusu -->
+        <div style="max-width: 760px; margin: 60px auto 0; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius-md); background: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 50px; height: 50px; background: var(--accent-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-dark);">Kitoox Ekibi</div>
+                    <div style="font-size: 14px; color: var(--text-muted);">En güncel haberler ve incelemeler.</div>
+                </div>
+            </div>
+            <button style="padding: 10px 20px; background: var(--accent-light); color: var(--accent); font-weight: bold; border-radius: 6px;">Paylaş</button>
+        </div>
+    </main>
+
+    <footer style="background: white; border-top: 1px solid var(--border); padding: 40px 0; margin-top: 60px; text-align: center;">
+        <p style="font-size: 13px; color: #94a3b8;">© 2026 Kitoox.com</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
