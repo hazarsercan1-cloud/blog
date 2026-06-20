@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitoox CMS — İçerik Yönetimi</title>
+    <title>Kitoox CMS — Firebase Yönetimi</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,21 +11,30 @@
 
     <nav class="navbar">
         <div class="nav-inner">
-            <div class="logo"><div class="logo-icon">⚙️</div>Kitoox CMS</div>
+            <div class="logo"><div class="logo-icon">🔥</div>Kitoox CMS</div>
             <a href="index.html" class="btn-primary" style="padding: 8px 16px; font-size: 14px;">Ana Siteye Git</a>
         </div>
     </nav>
 
-    <div class="admin-container">
+    <!-- Giriş (Şifre) Ekranı - Basit Güvenlik -->
+    <div id="loginScreen" style="position:fixed; inset:0; background:var(--bg-main); z-index:999; display:flex; align-items:center; justify-content:center;">
+        <div class="admin-card" style="text-align:center; max-width:400px; width:100%;">
+            <div style="font-size:40px; margin-bottom:20px;">🔒</div>
+            <h2 class="admin-title">Yönetici Girişi</h2>
+            <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Sadece Kitoox yöneticisi erişebilir.</p>
+            <input type="password" id="adminPass" class="form-control" placeholder="Yönetici Şifresi" style="margin-bottom:16px;">
+            <button class="btn-primary" onclick="checkPass()" style="width:100%; justify-content:center;">Giriş Yap</button>
+        </div>
+    </div>
+
+    <!-- Admin Paneli Ana İçerik -->
+    <div class="admin-container" id="adminPanel" style="display:none;">
         <div class="admin-card">
-            <h1 class="admin-title">Yeni Haber / İçerik Oluştur</h1>
+            <h1 class="admin-title">Yeni Haber Yayımla</h1>
+            
+            <div id="statusAlert" style="display:none; padding:16px; border-radius:8px; margin-bottom:24px; font-weight:600;"></div>
             
             <!-- TEMEL BİLGİLER -->
-            <div class="form-group">
-                <label class="form-label">URL Kimliği (İngilizce harfler ve tire, örn: yeni-iphone-sizintisi)</label>
-                <input type="text" id="postId" class="form-control" placeholder="yeni-iphone-sizintisi">
-            </div>
-            
             <div class="form-group">
                 <label class="form-label">Başlık</label>
                 <input type="text" id="postTitle" class="form-control" placeholder="Haberin çarpıcı başlığı...">
@@ -50,9 +59,11 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Manşet Görseli Linki (Ana sayfada görünecek fotoğraf)</label>
-                <input type="text" id="postThumb" class="form-control" placeholder="https://...">
+            <div class="form-group" style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid var(--border);">
+                <label class="form-label">Manşet Görseli (Ana Ekran Fotoğrafı)</label>
+                <input type="file" id="postThumbFile" class="form-control" accept="image/*" style="margin-bottom:8px;">
+                <div style="font-size:12px; color:var(--text-muted);">Fotoğraf seçtiğinizde Firebase'e otomatik yüklenir. Eğer internetten link kullanacaksanız dosyayı boş bırakıp alttaki link kutusunu kullanın.</div>
+                <input type="text" id="postThumbLink" class="form-control" placeholder="Veya internet linki (https://...)" style="margin-top:8px;">
             </div>
 
             <div class="form-group">
@@ -60,154 +71,186 @@
                 <textarea id="postExcerpt" class="form-control" rows="3" placeholder="Özet metni buraya yazın..."></textarea>
             </div>
 
-            <!-- BLOK DÜZENLEYİCİ (Gelişmiş Kısım) -->
+            <!-- BLOK DÜZENLEYİCİ -->
             <div class="builder-area">
                 <h2 class="admin-title" style="font-size: 20px; margin-bottom: 16px; border: none; padding: 0;">İçerik Blokları</h2>
-                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">Makalenizi parça parça oluşturun. Önce bir metin ekleyin, altına resim ekleyin, onun altına video ekleyin.</p>
-                
                 <div class="builder-toolbar">
                     <button class="btn-block" onclick="addBlock('text')">📝 Metin Ekle</button>
                     <button class="btn-block" onclick="addBlock('title2')">H2 Alt Başlık Ekle</button>
                     <button class="btn-block" onclick="addBlock('image')">🖼️ Resim Ekle</button>
                     <button class="btn-block" onclick="addBlock('youtube')">▶️ YouTube Ekle</button>
-                    <button class="btn-block" onclick="addBlock('audio')">🎧 Ses Dosyası Ekle</button>
                 </div>
 
                 <div class="blocks-container" id="blocksContainer">
-                    <!-- Dinamik bloklar buraya gelecek -->
+                    <!-- Dinamik bloklar -->
                 </div>
             </div>
 
-            <!-- ÇIKTI ALMA -->
             <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);">
-                <button class="btn-primary" onclick="generateCode()" style="width: 100%; justify-content: center;">🚀 Haberin Kodunu Oluştur (app.js için)</button>
+                <button class="btn-primary" id="publishBtn" style="width: 100%; justify-content: center; font-size:18px;">🚀 Haberi Buluta Kaydet (Canlı Yayımla)</button>
             </div>
-
-            <div id="exportArea">
-                <p style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">Aşağıdaki kodu kopyalayıp app.js dosyasındaki blogDatabase dizisinin İÇİNE EN ÜSTE yapıştırın:</p>
-                <textarea id="exportCode" readonly></textarea>
-                <button class="btn-block" onclick="copyCode()" style="margin-top: 12px;">📋 Kodu Kopyala</button>
-            </div>
-
         </div>
     </div>
 
-    <!-- Admin Panel Logic -->
-    <script>
+    <!-- Firebase SDK ve Mantık -->
+    <script type="module">
+        import { db, storage, collection, addDoc, serverTimestamp, ref, uploadBytesResumable, getDownloadURL } from './firebase-config.js';
+
+        // Güvenlik: Basit Şifre Koruması (Sadece bu sayfayı GitHub'a yüklemezseniz güvendedir)
+        window.checkPass = function() {
+            const pass = document.getElementById('adminPass').value;
+            // Eğitim amaçlı şifre 'kitoox2026' olarak ayarlandı
+            if(pass === 'kitoox2026') {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                addBlock('text'); // İlk bloğu ekle
+            } else {
+                alert("Hatalı Şifre!");
+            }
+        }
+
         let blockCounter = 0;
+        const blocksContainer = document.getElementById('blocksContainer');
 
-        // Sayfa açılışında otomatik 1 metin bloğu ekleyelim
-        window.onload = () => addBlock('text');
-
-        function addBlock(type) {
+        window.addBlock = function(type) {
             blockCounter++;
             const id = 'block_' + blockCounter;
-            const container = document.getElementById('blocksContainer');
-            
             const div = document.createElement('div');
             div.className = 'editor-block';
             div.id = id;
 
-            let typeLabel = '';
-            let inputsHtml = '';
-
+            let html = '';
             if (type === 'text') {
-                typeLabel = 'PARAGRAF METNİ';
-                inputsHtml = `<textarea class="form-control block-val" rows="4" placeholder="Metninizi yazın..."></textarea>`;
+                html = `<span class="block-type-label">METİN</span><textarea class="form-control block-val" rows="4" placeholder="Metin..."></textarea>`;
             } else if (type === 'title2') {
-                typeLabel = 'H2 ALT BAŞLIK';
-                inputsHtml = `<input type="text" class="form-control block-val" placeholder="Ara başlık yazın...">`;
+                html = `<span class="block-type-label">ALT BAŞLIK</span><input type="text" class="form-control block-val" placeholder="H2 Başlık">`;
             } else if (type === 'image') {
-                typeLabel = 'GÖRSEL';
-                inputsHtml = `
-                    <input type="text" class="form-control block-val" placeholder="Görsel Linki (https://...)">
-                    <input type="text" class="form-control block-caption" placeholder="Görsel alt yazısı (İsteğe bağlı)" style="margin-top:8px;">
+                html = `
+                    <span class="block-type-label">RESİM (Firebase'e Yüklenecek)</span>
+                    <input type="file" class="form-control block-file" accept="image/*" style="margin-bottom:8px;">
+                    <div style="font-size:12px; margin-bottom:8px;">Veya Link:</div>
+                    <input type="text" class="form-control block-val block-link" placeholder="https://...">
+                    <input type="text" class="form-control block-caption" placeholder="Resim Alt Yazısı" style="margin-top:8px;">
                 `;
             } else if (type === 'youtube') {
-                typeLabel = 'YOUTUBE VİDEOSU';
-                inputsHtml = `<input type="text" class="form-control block-val" placeholder="YouTube Embed Linki (Örn: https://www.youtube.com/embed/XXXX)">`;
-            } else if (type === 'audio') {
-                typeLabel = 'SES DOSYASI';
-                inputsHtml = `<input type="text" class="form-control block-val" placeholder="Ses Dosyası Linki (Örn: https://.../ses.mp3)">`;
+                html = `<span class="block-type-label">YOUTUBE</span><input type="text" class="form-control block-val" placeholder="Embed Linki (https://www.youtube.com/embed/...)">`;
             }
 
             div.innerHTML = `
-                <div class="block-handle">≡</div>
                 <div class="block-content-edit" data-type="${type}">
-                    <span class="block-type-label">${typeLabel}</span>
-                    ${inputsHtml}
+                    ${html}
                 </div>
-                <button class="btn-remove-block" onclick="removeBlock('${id}')" title="Bu bloğu sil">✖</button>
+                <button class="btn-remove-block" onclick="document.getElementById('${id}').remove()">✖</button>
             `;
-            
-            container.appendChild(div);
+            blocksContainer.appendChild(div);
         }
 
-        function removeBlock(id) {
-            document.getElementById(id).remove();
+        // Resmi Firebase Storage'a yükleyip linkini geri veren fonksiyon
+        async function uploadImageToFirebase(file) {
+            if(!file) return null;
+            const fileName = new Date().getTime() + '_' + file.name;
+            const storageRef = ref(storage, 'images/' + fileName);
+            const uploadTask = await uploadBytesResumable(storageRef, file);
+            const downloadURL = await getDownloadURL(uploadTask.ref);
+            return downloadURL;
         }
 
-        function generateCode() {
-            const id = document.getElementById('postId').value || 'yeni-yazi';
-            const title = document.getElementById('postTitle').value || 'Başlıksız Haber';
-            const cat = document.getElementById('postCat').value;
-            const isTrend = document.getElementById('postTrend').checked;
-            const isHead = document.getElementById('postHeadline').checked;
-            const thumb = document.getElementById('postThumb').value;
-            const excerpt = document.getElementById('postExcerpt').value;
+        // Kaydetme İşlemi
+        document.getElementById('publishBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('publishBtn');
+            const alertBox = document.getElementById('statusAlert');
             
-            // Tarih (Örn: 21 Haziran 2026)
-            const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const title = document.getElementById('postTitle').value;
+            if(!title) return alert("Başlık boş olamaz!");
 
-            // Blokları topla
-            const blocks = [];
-            const blockElements = document.querySelectorAll('.block-content-edit');
-            
-            blockElements.forEach(el => {
-                const type = el.getAttribute('data-type');
-                const val = el.querySelector('.block-val').value;
-                if (!val) return; // Boşsa atla
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Yükleniyor... (Resimler gönderiliyor)';
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#e0f2fe';
+            alertBox.style.color = '#0284c7';
+            alertBox.textContent = 'İşlem başladı, lütfen bekleyin...';
 
-                if (type === 'text') {
-                    blocks.push(`{ type: "text", content: "<p>${val.replace(/\n/g, '<br>')}</p>" }`);
-                } else if (type === 'title2') {
-                    blocks.push(`{ type: "text", content: "<h2>${val}</h2>" }`);
-                } else if (type === 'image') {
-                    const caption = el.querySelector('.block-caption').value;
-                    let capStr = caption ? `, caption: "${caption}"` : '';
-                    blocks.push(`{ type: "image", url: "${val}"${capStr} }`);
-                } else if (type === 'youtube') {
-                    blocks.push(`{ type: "youtube", url: "${val}" }`);
-                } else if (type === 'audio') {
-                    blocks.push(`{ type: "audio", url: "${val}" }`);
+            try {
+                // 1. Manşet Görselini Ayarla (Dosya seçildiyse yükle, yoksa linki al)
+                let thumbUrl = document.getElementById('postThumbLink').value;
+                const thumbFile = document.getElementById('postThumbFile').files[0];
+                if(thumbFile) {
+                    thumbUrl = await uploadImageToFirebase(thumbFile);
                 }
-            });
+                if(!thumbUrl) thumbUrl = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800"; // Varsayılan
 
-            // JSON String oluştur
-            const code = `    {
-        id: "${id}",
-        title: "${title}",
-        category: "${cat}",
-        isTrend: ${isTrend},
-        isHeadline: ${isHead},
-        date: "${dateStr}",
-        views: "0",
-        thumbnail: "${thumb}",
-        excerpt: "${excerpt.replace(/\n/g, ' ')}",
-        blocks: [
-            ${blocks.join(',\n            ')}
-        ]
-    },`;
+                // 2. Blokları Topla ve İçindeki Resimleri Yükle
+                const blocks = [];
+                const blockElements = document.querySelectorAll('.block-content-edit');
+                
+                for (let el of blockElements) {
+                    const type = el.getAttribute('data-type');
+                    
+                    if (type === 'text') {
+                        const val = el.querySelector('.block-val').value;
+                        if(val) blocks.push({ type: "text", content: `<p>${val.replace(/\n/g, '<br>')}</p>` });
+                    } 
+                    else if (type === 'title2') {
+                        const val = el.querySelector('.block-val').value;
+                        if(val) blocks.push({ type: "text", content: `<h2>${val}</h2>` });
+                    } 
+                    else if (type === 'youtube') {
+                        const val = el.querySelector('.block-val').value;
+                        if(val) blocks.push({ type: "youtube", url: val });
+                    }
+                    else if (type === 'image') {
+                        let imgUrl = el.querySelector('.block-link').value;
+                        const imgFile = el.querySelector('.block-file').files[0];
+                        if(imgFile) {
+                            imgUrl = await uploadImageToFirebase(imgFile);
+                        }
+                        const caption = el.querySelector('.block-caption').value;
+                        if(imgUrl) {
+                            blocks.push({ type: "image", url: imgUrl, caption: caption });
+                        }
+                    }
+                }
 
-            document.getElementById('exportCode').value = code;
-            document.getElementById('exportArea').style.display = 'block';
-        }
+                // 3. Veritabanına (Firestore) Gönder
+                const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                
+                await addDoc(collection(db, "posts"), {
+                    title: title,
+                    category: document.getElementById('postCat').value,
+                    isTrend: document.getElementById('postTrend').checked,
+                    isHeadline: document.getElementById('postHeadline').checked,
+                    date: dateStr,
+                    createdAt: serverTimestamp(),
+                    views: 0,
+                    thumbnail: thumbUrl,
+                    excerpt: document.getElementById('postExcerpt').value,
+                    blocks: blocks
+                });
 
-        function copyCode() {
-            const code = document.getElementById('exportCode').value;
-            navigator.clipboard.writeText(code);
-            alert("Kod kopyalandı! Şimdi app.js dosyasına yapıştırabilirsiniz.");
-        }
+                // Başarılı
+                alertBox.style.background = '#dcfce7';
+                alertBox.style.color = '#166534';
+                alertBox.textContent = '✅ Haberin başarıyla Firebase bulutuna kaydedildi ve şu an canlıda!';
+                btn.innerHTML = 'Yeni Haber Ekle';
+                btn.disabled = false;
+                
+                // Formu temizle
+                document.getElementById('postTitle').value = '';
+                document.getElementById('postExcerpt').value = '';
+                document.getElementById('postThumbFile').value = '';
+                document.getElementById('postThumbLink').value = '';
+                blocksContainer.innerHTML = '';
+                addBlock('text');
+
+            } catch (error) {
+                console.error(error);
+                alertBox.style.background = '#fee2e2';
+                alertBox.style.color = '#991b1b';
+                alertBox.textContent = '❌ Bir hata oluştu: ' + error.message;
+                btn.innerHTML = 'Tekrar Dene';
+                btn.disabled = false;
+            }
+        });
     </script>
 </body>
 </html>
