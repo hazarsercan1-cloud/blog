@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Windlevel CMS — Firebase Yönetimi</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Quill.js Zengin Metin Editörü CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +18,7 @@
         </div>
     </nav>
 
-    <!-- Giriş (Şifre) Ekranı - Basit Güvenlik -->
+    <!-- Giriş (Şifre) Ekranı -->
     <div id="loginScreen" style="position:fixed; inset:0; background:var(--bg-main); z-index:999; display:flex; align-items:center; justify-content:center;">
         <div class="admin-card" style="text-align:center; max-width:400px; width:100%;">
             <div style="font-size:40px; margin-bottom:20px;">🔒</div>
@@ -75,19 +77,10 @@
                 <textarea id="postExcerpt" class="form-control" rows="3" placeholder="Özet metni buraya yazın..."></textarea>
             </div>
 
-            <!-- BLOK DÜZENLEYİCİ -->
-            <div class="builder-area">
-                <h2 class="admin-title" style="font-size: 20px; margin-bottom: 16px; border: none; padding: 0;">İçerik Blokları</h2>
-                <div class="builder-toolbar">
-                    <button class="btn-block" onclick="addBlock('text')">📝 Metin Ekle</button>
-                    <button class="btn-block" onclick="addBlock('title2')">H2 Alt Başlık Ekle</button>
-                    <button class="btn-block" onclick="addBlock('image')">🖼️ Resim Ekle</button>
-                    <button class="btn-block" onclick="addBlock('youtube')">▶️ YouTube Ekle</button>
-                </div>
-
-                <div class="blocks-container" id="blocksContainer">
-                    <!-- Dinamik bloklar -->
-                </div>
+            <!-- GELİŞMİŞ EDİTÖR (QUILL) -->
+            <div class="form-group" style="margin-top: 30px;">
+                <label class="form-label">Haber İçeriği</label>
+                <div id="editor-container" style="height: 500px; background: white; border-radius: 0 0 8px 8px; font-family: var(--font-body); font-size: 16px;"></div>
             </div>
 
             <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);">
@@ -96,86 +89,97 @@
         </div>
     </div>
 
+    <!-- Quill.js JS Kütüphanesi -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
     <!-- Firebase SDK ve Mantık -->
     <script type="module">
         import { db, storage, collection, addDoc, serverTimestamp, ref, uploadBytesResumable, getDownloadURL } from './firebase-config.js';
 
-        // Güvenlik: Basit Şifre Koruması (Sadece bu sayfayı GitHub'a yüklemezseniz güvendedir)
+        // Güvenlik
         window.checkPass = function() {
             const pass = document.getElementById('adminPass').value;
-            // Eğitim amaçlı şifre 'windlevel2026' olarak ayarlandı
             if(pass === 'windlevel2026') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                addBlock('text'); // İlk bloğu ekle
             } else {
                 alert("Hatalı Şifre!");
             }
         }
 
-        let blockCounter = 0;
-        const blocksContainer = document.getElementById('blocksContainer');
+        // --- QULL JS (Zengin Editör) KURULUMU ---
+        var toolbarOptions = [
+            ['bold', 'italic', 'underline', 'strike'],        // Kalın, eğik vs.
+            ['blockquote', 'code-block'],                     // Alıntı
+            [{ 'header': [2, 3, 4, false] }],                 // Alt başlıklar
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],     // Maddeler
+            [{ 'color': [] }, { 'background': [] }],          // Renkler
+            ['link', 'image', 'video'],                       // Bağlantı, Resim, Video
+            ['clean']                                         // Temizle
+        ];
 
-        window.addBlock = function(type) {
-            blockCounter++;
-            const id = 'block_' + blockCounter;
-            const div = document.createElement('div');
-            div.className = 'editor-block';
-            div.id = id;
+        var quill = new Quill('#editor-container', {
+            modules: { toolbar: toolbarOptions },
+            theme: 'snow',
+            placeholder: 'Haberin tüm detaylarını buraya yazabilirsiniz. Araya resim veya YouTube linki eklemek için üstteki menüyü kullanın...'
+        });
 
-            let html = '';
-            if (type === 'text') {
-                html = `<span class="block-type-label">METİN</span><textarea class="form-control block-val" rows="4" placeholder="Metin..."></textarea>`;
-            } else if (type === 'title2') {
-                html = `<span class="block-type-label">ALT BAŞLIK</span><input type="text" class="form-control block-val" placeholder="H2 Başlık">`;
-            } else if (type === 'image') {
-                html = `
-                    <span class="block-type-label">RESİM (Firebase'e Yüklenecek)</span>
-                    <input type="file" class="form-control block-file" accept="image/*" style="margin-bottom:8px;">
-                    <div style="font-size:12px; margin-bottom:8px;">Veya Link:</div>
-                    <input type="text" class="form-control block-val block-link" placeholder="https://...">
-                    <input type="text" class="form-control block-caption" placeholder="Resim Alt Yazısı" style="margin-top:8px;">
-                `;
-            } else if (type === 'youtube') {
-                html = `<span class="block-type-label">YOUTUBE</span><input type="text" class="form-control block-val" placeholder="Embed Linki (https://www.youtube.com/embed/...)">`;
-            }
+        // RESİM YÜKLEME YAKALAYICISI (Image Handler)
+        quill.getModule('toolbar').addHandler('image', function() {
+            selectLocalImage();
+        });
 
-            div.innerHTML = `
-                <div class="block-content-edit" data-type="${type}">
-                    ${html}
-                </div>
-                <button class="btn-remove-block" onclick="document.getElementById('${id}').remove()">✖</button>
-            `;
-            blocksContainer.appendChild(div);
+        function selectLocalImage() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+
+            input.onchange = async () => {
+                const file = input.files[0];
+                if (file) {
+                    const range = quill.getSelection();
+                    // Yükleniyor bilgisi göster
+                    quill.insertText(range.index, '🚀 Resim Firebase\'e Yükleniyor...', 'user');
+                    
+                    try {
+                        const url = await uploadImageToFirebase(file);
+                        quill.deleteText(range.index, 34); // Yükleniyor yazısını sil
+                        quill.insertEmbed(range.index, 'image', url); // Resmi göm
+                    } catch(e) {
+                        quill.deleteText(range.index, 34);
+                        alert("Resim yüklenemedi: " + e.message);
+                    }
+                }
+            };
         }
 
-        // Resmi Firebase Storage'a yükleyip linkini geri veren fonksiyon
+        // Firebase Storage'a Resim Yükleme
         async function uploadImageToFirebase(file) {
             if(!file) return null;
             const fileName = new Date().getTime() + '_' + file.name;
             const storageRef = ref(storage, 'images/' + fileName);
             const uploadTask = await uploadBytesResumable(storageRef, file);
-            const downloadURL = await getDownloadURL(uploadTask.ref);
-            return downloadURL;
+            return await getDownloadURL(uploadTask.ref);
         }
 
-        // Kaydetme İşlemi
+        // --- KAYDETME İŞLEMİ ---
         document.getElementById('publishBtn').addEventListener('click', async () => {
             const btn = document.getElementById('publishBtn');
             const alertBox = document.getElementById('statusAlert');
-            
             const title = document.getElementById('postTitle').value;
+
             if(!title) return alert("Başlık boş olamaz!");
 
             btn.disabled = true;
-            btn.innerHTML = '⏳ Yükleniyor... (Resimler gönderiliyor)';
+            btn.innerHTML = '⏳ Yükleniyor... (Veriler kaydediliyor)';
             alertBox.style.display = 'block';
             alertBox.style.background = '#e0f2fe';
             alertBox.style.color = '#0284c7';
             alertBox.textContent = 'İşlem başladı, lütfen bekleyin...';
 
             try {
-                // 1. Manşet Görselini Ayarla (Dosya seçildiyse yükle, yoksa linki al)
+                // 1. Manşet Görselini Ayarla
                 let thumbUrl = document.getElementById('postThumbLink').value;
                 const thumbFile = document.getElementById('postThumbFile').files[0];
                 if(thumbFile) {
@@ -183,37 +187,8 @@
                 }
                 if(!thumbUrl) thumbUrl = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800"; // Varsayılan
 
-                // 2. Blokları Topla ve İçindeki Resimleri Yükle
-                const blocks = [];
-                const blockElements = document.querySelectorAll('.block-content-edit');
-                
-                for (let el of blockElements) {
-                    const type = el.getAttribute('data-type');
-                    
-                    if (type === 'text') {
-                        const val = el.querySelector('.block-val').value;
-                        if(val) blocks.push({ type: "text", content: `<p>${val.replace(/\n/g, '<br>')}</p>` });
-                    } 
-                    else if (type === 'title2') {
-                        const val = el.querySelector('.block-val').value;
-                        if(val) blocks.push({ type: "text", content: `<h2>${val}</h2>` });
-                    } 
-                    else if (type === 'youtube') {
-                        const val = el.querySelector('.block-val').value;
-                        if(val) blocks.push({ type: "youtube", url: val });
-                    }
-                    else if (type === 'image') {
-                        let imgUrl = el.querySelector('.block-link').value;
-                        const imgFile = el.querySelector('.block-file').files[0];
-                        if(imgFile) {
-                            imgUrl = await uploadImageToFirebase(imgFile);
-                        }
-                        const caption = el.querySelector('.block-caption').value;
-                        if(imgUrl) {
-                            blocks.push({ type: "image", url: imgUrl, caption: caption });
-                        }
-                    }
-                }
+                // 2. Editör İçeriğini HTML olarak al
+                const contentHtml = quill.root.innerHTML;
 
                 // 3. Veritabanına (Firestore) Gönder
                 const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -228,13 +203,13 @@
                     views: 0,
                     thumbnail: thumbUrl,
                     excerpt: document.getElementById('postExcerpt').value,
-                    blocks: blocks
+                    contentHtml: contentHtml // YENİ: Zengin HTML İçerik
                 });
 
                 // Başarılı
                 alertBox.style.background = '#dcfce7';
                 alertBox.style.color = '#166534';
-                alertBox.textContent = '✅ Haberin başarıyla Firebase bulutuna kaydedildi ve şu an canlıda!';
+                alertBox.textContent = '✅ Haberin başarıyla Firebase bulutuna kaydedildi!';
                 btn.innerHTML = 'Yeni Haber Ekle';
                 btn.disabled = false;
                 
@@ -243,8 +218,7 @@
                 document.getElementById('postExcerpt').value = '';
                 document.getElementById('postThumbFile').value = '';
                 document.getElementById('postThumbLink').value = '';
-                blocksContainer.innerHTML = '';
-                addBlock('text');
+                quill.root.innerHTML = ''; // Editörü temizle
 
             } catch (error) {
                 console.error(error);

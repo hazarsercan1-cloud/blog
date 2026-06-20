@@ -10,9 +10,10 @@ async function renderHome() {
     
     if (!heroGrid || !postList || !popularList) return;
 
-    // URL'den kategori filtresi kontrolü
+    // URL'den filtreleri kontrol et
     const urlParams = new URLSearchParams(window.location.search);
     const categoryFilter = urlParams.get('cat');
+    const typeFilter = urlParams.get('type');
 
     // "Yükleniyor" durumları
     heroGrid.innerHTML = '<div style="padding:40px; text-align:center;">Manşetler yükleniyor...</div>';
@@ -29,29 +30,36 @@ async function renderHome() {
             allPosts.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // Eğer URL'de "?cat=Teknoloji" varsa filtrele
+        // Filtreleme (Kategori, Trend veya Manşet)
         if (categoryFilter) {
             allPosts = allPosts.filter(p => p.category === categoryFilter);
             document.querySelector('.section-title').innerHTML = `📌 ${categoryFilter} Haberleri`;
-            // Kategori filtreliyse manşetleri gizleyelim, sadece haber akışı olsun
-            heroGrid.style.display = 'none';
+            if(heroGrid) heroGrid.style.display = 'none';
+        } else if (typeFilter === 'trend') {
+            allPosts = allPosts.filter(p => p.isTrend);
+            document.querySelector('.section-title').innerHTML = `🔥 Trend Haberler`;
+            if(heroGrid) heroGrid.style.display = 'none';
+        } else if (typeFilter === 'manset') {
+            allPosts = allPosts.filter(p => p.isHeadline);
+            document.querySelector('.section-title').innerHTML = `⭐️ Manşet Haberleri`;
+            if(heroGrid) heroGrid.style.display = 'none';
         }
 
         if (allPosts.length === 0) {
-            postList.innerHTML = '<div style="padding:40px; text-align:center;">Bu kategoride henüz haber bulunamadı.</div>';
-            if(!categoryFilter) heroGrid.innerHTML = '';
+            postList.innerHTML = '<div style="padding:40px; text-align:center;">Bu filtrelere uygun haber bulunamadı.</div>';
+            if(!categoryFilter && !typeFilter && heroGrid) heroGrid.innerHTML = '';
             return;
         }
 
-        // Manşetleri Ayır (isHeadline: true olanlar) - Kategori yoksa
-        const headlines = !categoryFilter ? allPosts.filter(post => post.isHeadline).slice(0, 3) : [];
+        // Manşetleri Ayır (isHeadline: true olanlar)
+        const headlines = (!categoryFilter && !typeFilter) ? allPosts.filter(post => post.isHeadline).slice(0, 3) : [];
         // Akış Haberleri
-        const feed = !categoryFilter ? allPosts.filter(post => !post.isHeadline) : allPosts;
+        const feed = (!categoryFilter && !typeFilter) ? allPosts.filter(post => !post.isHeadline) : allPosts;
         // En Çok Okunanlar (Trend olanlar)
         const popular = allPosts.filter(post => post.isTrend);
 
         // 1. Manşetleri Render Et
-        if (headlines.length > 0 && !categoryFilter) {
+        if (headlines.length > 0 && !categoryFilter && !typeFilter && heroGrid) {
             heroGrid.innerHTML = '';
             headlines.forEach((post, index) => {
                 const isMain = index === 0 ? 'main' : '';
@@ -71,7 +79,7 @@ async function renderHome() {
                     </a>
                 `;
             });
-        } else if (!categoryFilter) {
+        } else if (!categoryFilter && !typeFilter && heroGrid) {
             heroGrid.innerHTML = ''; // Manşet yoksa boş bırak
         }
 
@@ -157,7 +165,12 @@ async function renderArticle() {
 
         contentArea.innerHTML = '';
 
-        if(post.blocks && Array.isArray(post.blocks)) {
+        // Yeni nesil WYSIWYG Editör İçeriği (Quill.js)
+        if (post.contentHtml) {
+            contentArea.innerHTML = `<div class="ql-editor">${post.contentHtml}</div>`;
+        } 
+        // Eski nesil Blok Sistemi Desteği (Geriye uyumluluk)
+        else if(post.blocks && Array.isArray(post.blocks)) {
             post.blocks.forEach(block => {
                 if (block.type === 'text') {
                     contentArea.innerHTML += `<div class="block-text">${block.content}</div>`;
