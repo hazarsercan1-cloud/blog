@@ -1,5 +1,5 @@
 /* =============================================
-   Kitoox.com — Blog & Trend Haber Sitesi Stilleri
+   Windlevel — Blog & Trend Haber Sitesi Stilleri
    ============================================= */
 
 :root {
@@ -47,7 +47,7 @@ img { max-width: 100%; display: block; border-radius: var(--radius-sm); }
 button, input, select, textarea { font-family: inherit; border: none; outline: none; }
 button { cursor: pointer; }
 
-/* ---------------- HEADER (MENÜ) ---------------- */
+/* ---------------- HEADER VE AÇILIR MENÜ (DROPDOWN) ---------------- */
 .navbar {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -75,26 +75,62 @@ button { cursor: pointer; }
     font-weight: 800;
     color: var(--text-dark);
 }
-.logo span { color: var(--accent); }
-.logo-icon {
-    width: 32px; height: 32px;
-    background: var(--accent-gradient);
-    border-radius: var(--radius-sm);
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 18px;
-}
+.brand-logo-img { height: 32px; width: auto; object-fit: contain; }
 
-.nav-links { display: flex; gap: 24px; }
+.nav-links { display: flex; gap: 24px; align-items: center; }
 .nav-link {
     font-weight: 600;
     font-size: 15px;
     color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    height: 100%;
 }
 .nav-link:hover { color: var(--accent); }
-.nav-link.active { color: var(--accent); position: relative; }
-.nav-link.active::after {
-    content: ''; position: absolute; bottom: -24px; left: 0; right: 0;
-    height: 3px; background: var(--accent); border-radius: 3px 3px 0 0;
+
+/* Açılır Menü (Dropdown) */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: var(--nav-h);
+    left: -20px;
+    background-color: var(--bg-card);
+    min-width: 260px;
+    box-shadow: var(--shadow-lg);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    border: 1px solid var(--border);
+    border-top: none;
+    z-index: 1000;
+    padding: 10px 0;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+.dropdown-content a {
+    color: var(--text-body);
+    padding: 12px 20px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+.dropdown-content a:hover {
+    background-color: var(--accent-light);
+    color: var(--accent);
+    padding-left: 25px; /* Hover animasyonu */
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ---------------- ANA SAYFA (INDEX) ---------------- */
@@ -207,7 +243,6 @@ button { cursor: pointer; }
 .post-excerpt { color: var(--text-body); font-size: 15px; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .post-meta { display: flex; gap: 16px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
-/* Sidebar */
 .sidebar-widget {
     background: var(--bg-card);
     border: 1px solid var(--border);

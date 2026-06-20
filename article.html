@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haber — Kitoox</title>
+    <title>Haber — Windlevel</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,13 +13,24 @@
     <nav class="navbar">
         <div class="nav-inner">
             <a href="index.html" class="logo">
-                <div class="logo-icon">⚡</div>
-                Kitoox
+                <img src="img/windlevel_logo.png" class="brand-logo-img" alt="Windlevel Logo">
+                Windlevel
             </a>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Haberler</a>
-                <a href="index.html?cat=Teknoloji" class="nav-link">Teknoloji</a>
-                <a href="index.html?cat=Oyun" class="nav-link">Oyun</a>
+                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <div class="dropdown">
+                    <a href="#" class="nav-link">Kategoriler ▾</a>
+                    <div class="dropdown-content">
+                        <a href="index.html?cat=Teknoloji / Dijital">Teknoloji / Dijital</a>
+                        <a href="index.html?cat=Yaşam / Lifestyle">Yaşam / Lifestyle</a>
+                        <a href="index.html?cat=Kültür & Sanat">Kültür & Sanat</a>
+                        <a href="index.html?cat=Eğitim & Kariyer">Eğitim & Kariyer</a>
+                        <a href="index.html?cat=Girişimcilik & Dijital Pazarlama">Girişimcilik & Dijital Pazarlama</a>
+                        <a href="index.html?cat=Yeme & İçme">Yeme & İçme (Gastronomi)</a>
+                        <a href="index.html?cat=Oyun & Eğlence">Oyun & Eğlence</a>
+                        <a href="index.html?cat=Gündem / Trendler">Gündem / Trendler</a>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -31,7 +42,7 @@
             <div class="article-meta">
                 <div class="article-meta-item" id="artDate">📅 --</div>
                 <div class="article-meta-item" id="artViews">👁️ --</div>
-                <div class="article-meta-item">✍️ Kitoox Editör</div>
+                <div class="article-meta-item">✍️ Windlevel Editör</div>
             </div>
         </header>
 
@@ -44,9 +55,9 @@
         <!-- Yazar ve Paylaş Kutusu -->
         <div style="max-width: 760px; margin: 60px auto 0; padding: 24px; border: 1px solid var(--border); border-radius: var(--radius-md); background: white; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 50px; height: 50px; background: var(--accent-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+                <div style="width: 50px; height: 50px; background: var(--accent-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">💨</div>
                 <div>
-                    <div style="font-weight: 700; color: var(--text-dark);">Kitoox Ekibi</div>
+                    <div style="font-weight: 700; color: var(--text-dark);">Windlevel Ekibi</div>
                     <div style="font-size: 14px; color: var(--text-muted);">En güncel haberler ve incelemeler.</div>
                 </div>
             </div>
@@ -55,7 +66,17 @@
     </main>
 
     <footer style="background: white; border-top: 1px solid var(--border); padding: 40px 0; margin-top: 60px; text-align: center;">
-        <p style="font-size: 13px; color: #94a3b8;">© 2026 Kitoox.com</p>
+        <div style="font-family: var(--font-heading); font-size: 20px; font-weight: 800; color: var(--text-dark); margin-bottom: 16px;">
+            Windlevel
+        </div>
+        <div style="display: flex; justify-content: center; gap: 20px; font-size: 14px; color: var(--text-muted); flex-wrap: wrap;">
+            <a href="hakkimizda.html">Hakkımızda</a>
+            <a href="iletisim.html">İletişim</a>
+            <a href="gizlilik.html">Gizlilik Politikası</a>
+            <a href="sartlar.html">Kullanım Şartları</a>
+            <a href="cerez.html">Çerez Politikası</a>
+        </div>
+        <p style="margin-top: 24px; font-size: 13px; color: #94a3b8;">© 2026 Windlevel. Tüm hakları saklıdır.</p>
     </footer>
 
     <script type="module" src="app.js"></script>

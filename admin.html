@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitoox CMS — Firebase Yönetimi</title>
+    <title>Windlevel CMS — Firebase Yönetimi</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,7 @@
 
     <nav class="navbar">
         <div class="nav-inner">
-            <div class="logo"><div class="logo-icon">🔥</div>Kitoox CMS</div>
+            <div class="logo"><div class="logo-icon">💨</div>Windlevel CMS</div>
             <a href="index.html" class="btn-primary" style="padding: 8px 16px; font-size: 14px;">Ana Siteye Git</a>
         </div>
     </nav>
@@ -21,7 +21,7 @@
         <div class="admin-card" style="text-align:center; max-width:400px; width:100%;">
             <div style="font-size:40px; margin-bottom:20px;">🔒</div>
             <h2 class="admin-title">Yönetici Girişi</h2>
-            <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Sadece Kitoox yöneticisi erişebilir.</p>
+            <p style="font-size:14px; color:var(--text-muted); margin-bottom:20px;">Sadece Windlevel yöneticisi erişebilir.</p>
             <input type="password" id="adminPass" class="form-control" placeholder="Yönetici Şifresi" style="margin-bottom:16px;">
             <button class="btn-primary" onclick="checkPass()" style="width:100%; justify-content:center;">Giriş Yap</button>
         </div>
@@ -44,10 +44,14 @@
                 <div class="form-group" style="flex: 1;">
                     <label class="form-label">Kategori</label>
                     <select id="postCat" class="form-control">
-                        <option value="Teknoloji">Teknoloji</option>
-                        <option value="Oyun">Oyun</option>
-                        <option value="Donanım">Donanım</option>
-                        <option value="Sosyal Medya">Sosyal Medya</option>
+                        <option value="Teknoloji / Dijital">Teknoloji / Dijital</option>
+                        <option value="Yaşam / Lifestyle">Yaşam / Lifestyle</option>
+                        <option value="Kültür & Sanat">Kültür & Sanat</option>
+                        <option value="Eğitim & Kariyer">Eğitim & Kariyer</option>
+                        <option value="Girişimcilik & Dijital Pazarlama">Girişimcilik & Dijital Pazarlama</option>
+                        <option value="Yeme & İçme">Yeme & İçme (Gastronomi)</option>
+                        <option value="Oyun & Eğlence">Oyun & Eğlence</option>
+                        <option value="Gündem / Trendler">Gündem / Trendler</option>
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1;">
@@ -99,8 +103,8 @@
         // Güvenlik: Basit Şifre Koruması (Sadece bu sayfayı GitHub'a yüklemezseniz güvendedir)
         window.checkPass = function() {
             const pass = document.getElementById('adminPass').value;
-            // Eğitim amaçlı şifre 'kitoox2026' olarak ayarlandı
-            if(pass === 'kitoox2026') {
+            // Eğitim amaçlı şifre 'windlevel2026' olarak ayarlandı
+            if(pass === 'windlevel2026') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 addBlock('text'); // İlk bloğu ekle
