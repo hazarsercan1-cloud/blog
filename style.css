@@ -69,13 +69,13 @@ button { cursor: pointer; }
 .logo {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     font-family: var(--font-heading);
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 800;
     color: var(--text-dark);
 }
-.brand-logo-img { height: 32px; width: auto; object-fit: contain; }
+.brand-logo-img { height: 48px; width: auto; object-fit: contain; }
 
 .nav-links { display: flex; gap: 24px; align-items: center; }
 .nav-link {
