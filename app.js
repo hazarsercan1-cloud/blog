@@ -201,4 +201,35 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (document.getElementById('artTitle')) {
         renderArticle();
     }
+    initCookieBanner();
 });
+
+// ==================== COOKIE BANNER ====================
+function initCookieBanner() {
+    if (localStorage.getItem('cookieConsent')) return;
+
+    const banner = document.createElement('div');
+    banner.className = 'cookie-banner';
+    banner.innerHTML = `
+        <h3>Daha iyi bir deneyim için izninize ihtiyacımız var</h3>
+        <p>Çerezleri, sitenin performans ve kullanımı hakkında bilgi toplayıp analiz etmek, içerik ve reklamları geliştirmek ve özelleştirmek için kullanıyoruz.</p>
+        <div class="cookie-actions">
+            <a href="cerez.html" class="btn-cookie" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">Çerez Ayarları</a>
+            <button class="btn-cookie" id="btnCookieReject">Reddet</button>
+            <button class="btn-cookie btn-cookie-accept" id="btnCookieAccept">Tümünü Kabul Et</button>
+        </div>
+    `;
+    document.body.appendChild(banner);
+
+    document.getElementById('btnCookieAccept').addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'accepted');
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 300);
+    });
+
+    document.getElementById('btnCookieReject').addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'rejected');
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 300);
+    });
+}
