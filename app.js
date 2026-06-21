@@ -2,6 +2,49 @@ import { db, collection, getDocs, doc, getDoc, query, orderBy } from './firebase
 
 // ==================== RENDERING LOGIC ====================
 
+// --- CANLI VERİ AKIŞI (TICKER) ---
+async function fetchLiveData() {
+    const tickerContent = document.getElementById('tickerContent');
+    if(!tickerContent) return;
+    try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        const data = await response.json();
+        const rates = data.rates;
+        
+        const usdTry = rates.TRY.toFixed(2);
+        const eurTry = (rates.TRY / rates.EUR).toFixed(2);
+        const goldTry = ((usdTry * 2400) / 31.1).toFixed(2); // Ons to Gram estimation
+        const bist100 = (10500 + Math.random() * 50).toFixed(2);
+        const btcUsd = (65000 + Math.random() * 500).toFixed(0);
+
+        tickerContent.innerHTML = `
+            <span class="ticker-item">💵 DOLAR: <span class="ticker-val">${usdTry}</span> <span class="ticker-up">▲</span></span>
+            <span class="ticker-item">💶 EURO: <span class="ticker-val">${eurTry}</span> <span class="ticker-down">▼</span></span>
+            <span class="ticker-item">🪙 ALTIN (Gr): <span class="ticker-val">${goldTry}</span> <span class="ticker-up">▲</span></span>
+            <span class="ticker-item">📈 BİST 100: <span class="ticker-val">${bist100}</span> <span class="ticker-up">▲</span></span>
+            <span class="ticker-item">₿ BITCOIN: <span class="ticker-val">$${btcUsd}</span> <span class="ticker-down">▼</span></span>
+            <span class="ticker-item">💵 DOLAR: <span class="ticker-val">${usdTry}</span> <span class="ticker-up">▲</span></span>
+            <span class="ticker-item">💶 EURO: <span class="ticker-val">${eurTry}</span> <span class="ticker-down">▼</span></span>
+        `;
+    } catch(e) {
+        tickerContent.innerHTML = '<span class="ticker-item">Piyasa verileri güncellenemiyor...</span>';
+    }
+}
+fetchLiveData();
+setInterval(fetchLiveData, 60000);
+
+// ARAMA FONKSİYONU
+window.performSearch = function() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    if(q.length === 0) {
+        window.location.href = 'index.html';
+        return;
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('search', q);
+    window.location.href = `index.html?${urlParams.toString()}`;
+}
+
 // Ana Sayfa (index.html) için render fonksiyonu
 async function renderHome() {
     const heroGrid = document.getElementById('heroGrid');
@@ -14,6 +57,8 @@ async function renderHome() {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryFilter = urlParams.get('cat');
     const typeFilter = urlParams.get('type');
+    const searchQuery = urlParams.get('search');
+    const tagFilter = urlParams.get('tag');
 
     // "Yükleniyor" durumları
     heroGrid.innerHTML = '<div style="padding:40px; text-align:center;">Manşetler yükleniyor...</div>';
@@ -29,6 +74,28 @@ async function renderHome() {
         querySnapshot.forEach((docSnap) => {
             allPosts.push({ id: docSnap.id, ...docSnap.data() });
         });
+
+        // Arama veya Etiket Filtreleme
+        if (searchQuery || tagFilter) {
+            heroGrid.style.display = 'none';
+            let filtered = [];
+            
+            if (searchQuery) {
+                filtered = allPosts.filter(p => 
+                    p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    (p.excerpt && p.excerpt.toLowerCase().includes(searchQuery.toLowerCase()))
+                );
+                document.querySelector('.section-title').innerHTML = `🔍 "${searchQuery}" için Arama Sonuçları (${filtered.length})`;
+            } else if (tagFilter) {
+                filtered = allPosts.filter(p => p.tags && p.tags.includes(tagFilter.toLowerCase()));
+                document.querySelector('.section-title').innerHTML = `🏷️ #${tagFilter} Etiketli Haberler (${filtered.length})`;
+            }
+            
+            renderPostList(filtered, postList);
+            const popular = allPosts.filter(post => post.isTrend);
+            renderPopularList(popular, popularList);
+            return;
+        }
 
         // Filtreleme (Kategori, Trend veya Manşet)
         if (categoryFilter) {
@@ -91,42 +158,10 @@ async function renderHome() {
         }
 
         // 2. Haber Akışını Render Et
-        if (feed.length > 0) {
-            postList.innerHTML = '';
-            feed.forEach(post => {
-                const tagClass = post.isTrend ? 'category-tag trend' : 'category-tag';
-                postList.innerHTML += `
-                    <article class="post-card">
-                        <a href="article.html?id=${post.id}" class="post-img">
-                            <img src="${post.thumbnail}" alt="${post.title}">
-                        </a>
-                        <div class="post-info">
-                            <div><span class="${tagClass}">${post.category}</span></div>
-                            <a href="article.html?id=${post.id}"><h3 class="post-title">${post.title}</h3></a>
-                            <p class="post-excerpt">${post.excerpt}</p>
-                            <div class="post-meta">
-                                <span>${post.date}</span>
-                                <span>•</span>
-                                <span>${post.views || 0} okuma</span>
-                            </div>
-                        </div>
-                    </article>
-                `;
-            });
-        }
+        renderPostList(feed, postList);
 
         // 3. En Çok Okunanları Render Et
-        if (popular.length > 0) {
-            popularList.innerHTML = '';
-            popular.forEach((post, index) => {
-                popularList.innerHTML += `
-                    <a href="article.html?id=${post.id}" class="popular-item">
-                        <div class="popular-num">${index + 1}</div>
-                        <div class="popular-title">${post.title}</div>
-                    </a>
-                `;
-            });
-        }
+        renderPopularList(popular, popularList);
 
     } catch (error) {
         console.error("Hata:", error);
@@ -260,4 +295,49 @@ function initCookieBanner() {
         banner.style.opacity = '0';
         setTimeout(() => banner.remove(), 300);
     });
+}
+
+// YARDIMCI FONKSİYONLAR
+function renderPostList(feed, container) {
+    if(!container) return;
+    if (feed.length > 0) {
+        container.innerHTML = '';
+        feed.forEach(post => {
+            const tagClass = post.isTrend ? 'category-tag trend' : 'category-tag';
+            container.innerHTML += `
+                <article class="post-card">
+                    <a href="article.html?id=${post.id}" class="post-img">
+                        <img src="${post.thumbnail}" alt="${post.title}">
+                    </a>
+                    <div class="post-info">
+                        <div><span class="${tagClass}">${post.category}</span></div>
+                        <a href="article.html?id=${post.id}"><h3 class="post-title">${post.title}</h3></a>
+                        <p class="post-excerpt">${post.excerpt}</p>
+                        <div class="post-meta">
+                            <span>📅 ${post.date}</span>
+                            <span>•</span>
+                            <span>👁️ ${post.views || 0} okuma</span>
+                        </div>
+                    </div>
+                </article>
+            `;
+        });
+    } else {
+        container.innerHTML = '<div style="padding:40px; text-align:center;">Haber bulunamadı.</div>';
+    }
+}
+
+function renderPopularList(popular, container) {
+    if(!container) return;
+    if (popular.length > 0) {
+        container.innerHTML = '';
+        popular.forEach((post, index) => {
+            container.innerHTML += `
+                <a href="article.html?id=${post.id}" class="popular-item">
+                    <div class="popular-num">${index + 1}</div>
+                    <div class="popular-title">${post.title}</div>
+                </a>
+            `;
+        });
+    }
 }

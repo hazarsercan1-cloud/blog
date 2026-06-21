@@ -63,6 +63,10 @@
                     </select>
                 </div>
                 <div class="form-group" style="flex: 1; min-width:250px;">
+                    <label class="form-label">Etiketler (Hashtag)</label>
+                    <input type="text" id="postTags" class="form-control" placeholder="Virgülle ayırın (Örn: yapayzeka, siber, teknoloji)">
+                </div>
+                <div class="form-group" style="flex: 1; min-width:250px;">
                     <label class="form-label">Seçenekler</label>
                     <div style="display: flex; gap: 16px; margin-top: 10px;">
                         <label style="font-weight: 600;"><input type="checkbox" id="postTrend"> 🔥 Trend Haber</label>
@@ -260,6 +264,7 @@
             document.getElementById('postCat').value = post.category;
             document.getElementById('postTrend').checked = post.isTrend || false;
             document.getElementById('postHeadline').checked = post.isHeadline || false;
+            document.getElementById('postTags').value = post.tags ? post.tags.join(', ') : '';
             document.getElementById('postThumbLink').value = post.thumbnail || '';
             document.getElementById('postExcerpt').value = post.excerpt || '';
             quill.root.innerHTML = post.contentHtml || '';
@@ -275,6 +280,7 @@
             document.getElementById('publishBtn').style.background = "var(--accent)";
             document.getElementById('editPostId').value = "";
             
+            document.getElementById('postTags').value = '';
             document.getElementById('postTitle').value = '';
             document.getElementById('postThumbLink').value = '';
             document.getElementById('postExcerpt').value = '';
@@ -318,9 +324,16 @@
                     }
                 }
 
+                let tagsArray = [];
+                const tagsInput = document.getElementById('postTags').value;
+                if(tagsInput) {
+                    tagsArray = tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t !== '');
+                }
+
                 const postData = {
                     title: title,
                     category: document.getElementById('postCat').value,
+                    tags: tagsArray,
                     isTrend: document.getElementById('postTrend').checked,
                     isHeadline: document.getElementById('postHeadline').checked,
                     excerpt: document.getElementById('postExcerpt').value,

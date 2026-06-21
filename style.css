@@ -48,9 +48,37 @@ button, input, select, textarea { font-family: inherit; border: none; outline: n
 button { cursor: pointer; }
 
 /* ---------------- HEADER VE AÇILIR MENÜ (DROPDOWN) ---------------- */
-.navbar {
+/* Canlı Veri Bandı (Ticker) */
+.live-ticker {
     position: fixed;
     top: 0; left: 0; right: 0;
+    height: 36px;
+    background: #0f172a;
+    color: white;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+    border-bottom: 1px solid #1e293b;
+}
+.ticker-wrapper { width: 100%; overflow: hidden; white-space: nowrap; }
+.ticker-content { display: inline-block; padding-left: 100%; animation: ticker 25s linear infinite; }
+.ticker-content:hover { animation-play-state: paused; }
+@keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-100%, 0, 0); }
+}
+.ticker-item { display: inline-flex; align-items: center; gap: 6px; margin-right: 40px; }
+.ticker-val { font-weight: 800; }
+.ticker-up { color: #10b981; font-size:10px; }
+.ticker-down { color: #ef4444; font-size:10px; }
+
+.navbar {
+    position: fixed;
+    top: 36px; /* Ticker yüksekliği eklendi */
+    left: 0; right: 0;
     height: var(--nav-h);
     background: var(--bg-header);
     border-bottom: 1px solid var(--border);
@@ -78,6 +106,21 @@ button { cursor: pointer; }
 .brand-logo-img { height: 48px; width: auto; object-fit: contain; }
 
 .nav-links { display: flex; gap: 24px; align-items: center; }
+
+/* Arama Çubuğu */
+.nav-search {
+    display: flex; align-items: center;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-right: 16px;
+}
+.nav-search input { background: transparent; font-size: 14px; color: var(--text-dark); width: 150px; transition: width 0.3s; }
+.nav-search input:focus { width: 200px; }
+.nav-search button { background: transparent; font-size: 14px; color: var(--text-muted); }
+.nav-search button:hover { color: var(--accent); }
+
 .nav-link {
     font-weight: 600;
     font-size: 15px;
@@ -136,7 +179,7 @@ button { cursor: pointer; }
 /* ---------------- ANA SAYFA (INDEX) ---------------- */
 .container {
     max-width: var(--max-w);
-    margin: calc(var(--nav-h) + 30px) auto 60px;
+    margin: calc(var(--nav-h) + 66px) auto 60px; /* 30 + 36px ticker */
     padding: 0 20px;
 }
 
@@ -410,7 +453,7 @@ button { cursor: pointer; }
 
 
 /* ---------------- ADMIN PANEL ---------------- */
-.admin-container { max-width: 900px; margin: calc(var(--nav-h) + 30px) auto 60px; padding: 0 20px; }
+.admin-container { max-width: 900px; margin: calc(var(--nav-h) + 66px) auto 60px; padding: 0 20px; }
 .admin-card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 32px; box-shadow: var(--shadow-sm); }
 .admin-title { font-family: var(--font-heading); font-size: 24px; font-weight: 800; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
 

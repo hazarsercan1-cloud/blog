@@ -8,16 +8,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Canlı Veri Bandı (Ticker) -->
+    <div class="live-ticker" id="liveTicker">
+        <div class="ticker-wrapper">
+            <div class="ticker-content" id="tickerContent">
+                <span class="ticker-item">Piyasa Verileri Yükleniyor...</span>
+            </div>
+        </div>
+    </div>
 
-    <!-- Menü -->
+    <!-- Menü (Navbar) -->
     <nav class="navbar">
         <div class="nav-inner">
-            <a href="index.html" class="logo">
-                <img src="img/windlevel_logo.png" class="brand-logo-img" alt="Windlevel Logo">
-                Windlevel
-            </a>
+            <div class="logo"><div class="logo-icon">💨</div>Windlevel</div>
             <div class="nav-links">
-                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <!-- Arama Çubuğu -->
+                <div class="nav-search">
+                    <input type="text" id="searchInput" placeholder="Haberlerde ara..." onkeypress="if(event.key==='Enter') performSearch()">
+                    <button onclick="performSearch()">🔍</button>
+                </div>
+
+                <a href="#" class="nav-link">Ana Sayfa</a>
                 <a href="index.html?type=manset" class="nav-link" style="color: #f59e0b;">⭐️ Manşetler</a>
                 <a href="index.html?type=trend" class="nav-link" style="color: #ef4444;">🔥 Trendler</a>
                 <div class="dropdown">
