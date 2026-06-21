@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Windlevel CMS — Firebase Yönetimi</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
-    <!-- Quill.js Zengin Metin Editörü CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <nav class="navbar">
         <div class="nav-inner">
             <div class="logo"><div class="logo-icon">💨</div>Windlevel CMS</div>
@@ -18,7 +16,7 @@
         </div>
     </nav>
 
-    <!-- Giriş (Şifre) Ekranı -->
+    <!-- Giriş Ekranı -->
     <div id="loginScreen" style="position:fixed; inset:0; background:var(--bg-main); z-index:999; display:flex; align-items:center; justify-content:center;">
         <div class="admin-card" style="text-align:center; max-width:400px; width:100%;">
             <div style="font-size:40px; margin-bottom:20px;">🔒</div>
@@ -31,19 +29,27 @@
 
     <!-- Admin Paneli Ana İçerik -->
     <div class="admin-container" id="adminPanel" style="display:none;">
+        
+        <!-- YENİ HABER & DÜZENLEME FORMU -->
         <div class="admin-card">
-            <h1 class="admin-title">Yeni Haber Yayımla</h1>
+            <h1 class="admin-title" id="formMainTitle">Yeni Haber Yayımla</h1>
+            
+            <p id="editModeNotice" style="display:none; color:#d97706; background:#fef3c7; padding:12px; border-radius:8px; border:1px solid #fcd34d; font-weight:600; margin-bottom:20px;">
+                ⚠️ Şu an mevcut bir haberi DÜZENLİYORSUNUZ. Değişiklikleri kaydetmek için alttaki butona basın. 
+                <a href="#" onclick="cancelEdit()" style="color:#2563eb; text-decoration:underline; margin-left:10px;">İptal Et (Yeni Haber Ekle)</a>
+            </p>
             
             <div id="statusAlert" style="display:none; padding:16px; border-radius:8px; margin-bottom:24px; font-weight:600;"></div>
             
-            <!-- TEMEL BİLGİLER -->
+            <input type="hidden" id="editPostId" value="">
+
             <div class="form-group">
                 <label class="form-label">Başlık</label>
                 <input type="text" id="postTitle" class="form-control" placeholder="Haberin çarpıcı başlığı...">
             </div>
 
-            <div style="display: flex; gap: 20px;">
-                <div class="form-group" style="flex: 1;">
+            <div style="display: flex; gap: 20px; flex-wrap:wrap;">
+                <div class="form-group" style="flex: 1; min-width:250px;">
                     <label class="form-label">Kategori</label>
                     <select id="postCat" class="form-control">
                         <option value="Teknoloji / Dijital">Teknoloji / Dijital</option>
@@ -56,7 +62,7 @@
                         <option value="Gündem / Trendler">Gündem / Trendler</option>
                     </select>
                 </div>
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group" style="flex: 1; min-width:250px;">
                     <label class="form-label">Seçenekler</label>
                     <div style="display: flex; gap: 16px; margin-top: 10px;">
                         <label style="font-weight: 600;"><input type="checkbox" id="postTrend"> 🔥 Trend Haber</label>
@@ -68,8 +74,15 @@
             <div class="form-group" style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid var(--border);">
                 <label class="form-label">Manşet Görseli (Ana Ekran Fotoğrafı)</label>
                 <input type="file" id="postThumbFile" class="form-control" accept="image/*" style="margin-bottom:8px;">
-                <div style="font-size:12px; color:var(--text-muted);">Fotoğraf seçtiğinizde Firebase'e otomatik yüklenir. Eğer internetten link kullanacaksanız dosyayı boş bırakıp alttaki link kutusunu kullanın.</div>
-                <input type="text" id="postThumbLink" class="form-control" placeholder="Veya internet linki (https://...)" style="margin-top:8px;">
+                <input type="text" id="postThumbLink" class="form-control" placeholder="Veya internet linki (https://...)">
+            </div>
+
+            <!-- YENİ: ÇOKLU GALERİ -->
+            <div class="form-group" style="background:#eff6ff; padding:16px; border-radius:8px; border:1px solid #bfdbfe;">
+                <label class="form-label" style="color:#1d4ed8;">📸 Galeri Görselleri (İsteğe Bağlı)</label>
+                <p style="font-size:13px; color:#3b82f6; margin-bottom:10px;">Bu görseller okuma sayfasında haberin başında yan yana şık bir ızgara (Grid) olarak gösterilir. Klavyeden CTRL'ye basılı tutarak birden fazla resim seçebilirsiniz.</p>
+                <input type="file" id="postGalleryFiles" class="form-control" accept="image/*" multiple>
+                <div id="galleryPreview" style="display:flex; gap:10px; margin-top:10px; overflow-x:auto;"></div>
             </div>
 
             <div class="form-group">
@@ -77,59 +90,73 @@
                 <textarea id="postExcerpt" class="form-control" rows="3" placeholder="Özet metni buraya yazın..."></textarea>
             </div>
 
-            <!-- GELİŞMİŞ EDİTÖR (QUILL) -->
             <div class="form-group" style="margin-top: 30px;">
                 <label class="form-label">Haber İçeriği</label>
-                <div id="editor-container" style="height: 500px; background: white; border-radius: 0 0 8px 8px; font-family: var(--font-body); font-size: 16px;"></div>
+                <div id="editor-container" style="height: 400px; background: white; border-radius: 0 0 8px 8px; font-family: var(--font-body); font-size: 16px;"></div>
             </div>
 
             <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border);">
-                <button class="btn-primary" id="publishBtn" style="width: 100%; justify-content: center; font-size:18px;">🚀 Haberi Buluta Kaydet (Canlı Yayımla)</button>
+                <button class="btn-primary" id="publishBtn" style="width: 100%; justify-content: center; font-size:18px;">🚀 Haberi Buluta Kaydet</button>
+            </div>
+        </div>
+
+        <!-- YENİ: HABER YÖNETİMİ -->
+        <div class="admin-card" style="margin-top: 40px;">
+            <h2 class="admin-title">Mevcut Haberleri Yönet</h2>
+            <div style="overflow-x: auto;">
+                <table style="width:100%; text-align:left; border-collapse:collapse; min-width:600px; font-size:15px;">
+                    <thead>
+                        <tr style="border-bottom:2px solid var(--border); background:#f8fafc;">
+                            <th style="padding:16px; color:var(--text-muted);">Haber Başlığı</th>
+                            <th style="padding:16px; color:var(--text-muted);">Kategori</th>
+                            <th style="padding:16px; color:var(--text-muted);">Tarih</th>
+                            <th style="padding:16px; color:var(--text-muted); text-align:right;">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postsTableBody">
+                        <tr><td colspan="4" style="padding:20px; text-align:center;">Haberler yükleniyor...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Quill.js JS Kütüphanesi -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
-    <!-- Firebase SDK ve Mantık -->
     <script type="module">
-        import { db, storage, collection, addDoc, serverTimestamp, ref, uploadBytesResumable, getDownloadURL } from './firebase-config.js';
+        import { db, storage, collection, addDoc, updateDoc, deleteDoc, getDocs, doc, query, orderBy, serverTimestamp, ref, uploadBytesResumable, getDownloadURL } from './firebase-config.js';
 
-        // Güvenlik
-        window.checkPass = function() {
+        let allPostsData = [];
+
+        window.checkPass = async function() {
             const pass = document.getElementById('adminPass').value;
             if(pass === 'windlevel2026') {
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
+                await loadPosts();
             } else {
                 alert("Hatalı Şifre!");
             }
         }
 
-        // --- QULL JS (Zengin Editör) KURULUMU ---
         var toolbarOptions = [
-            ['bold', 'italic', 'underline', 'strike'],        // Kalın, eğik vs.
-            ['blockquote', 'code-block'],                     // Alıntı
-            [{ 'header': [2, 3, 4, false] }],                 // Alt başlıklar
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],     // Maddeler
-            [{ 'color': [] }, { 'background': [] }],          // Renkler
-            ['link', 'image', 'video'],                       // Bağlantı, Resim, Video
-            ['clean']                                         // Temizle
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': [2, 3, 4, false] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'color': [] }, { 'background': [] }],
+            ['link', 'image', 'video'],
+            ['clean']
         ];
 
         var quill = new Quill('#editor-container', {
             modules: { toolbar: toolbarOptions },
             theme: 'snow',
-            placeholder: 'Haberin tüm detaylarını buraya yazabilirsiniz. Araya resim veya YouTube linki eklemek için üstteki menüyü kullanın...'
+            placeholder: 'Haberin tüm detaylarını buraya yazabilirsiniz...'
         });
 
-        // RESİM YÜKLEME YAKALAYICISI (Image Handler)
+        // Editör içi resim yükleme
         quill.getModule('toolbar').addHandler('image', function() {
-            selectLocalImage();
-        });
-
-        function selectLocalImage() {
             const input = document.createElement('input');
             input.setAttribute('type', 'file');
             input.setAttribute('accept', 'image/*');
@@ -139,22 +166,19 @@
                 const file = input.files[0];
                 if (file) {
                     const range = quill.getSelection();
-                    // Yükleniyor bilgisi göster
                     quill.insertText(range.index, '🚀 Resim Firebase\'e Yükleniyor...', 'user');
-                    
                     try {
                         const url = await uploadImageToFirebase(file);
-                        quill.deleteText(range.index, 34); // Yükleniyor yazısını sil
-                        quill.insertEmbed(range.index, 'image', url); // Resmi göm
+                        quill.deleteText(range.index, 34);
+                        quill.insertEmbed(range.index, 'image', url);
                     } catch(e) {
                         quill.deleteText(range.index, 34);
                         alert("Resim yüklenemedi: " + e.message);
                     }
                 }
             };
-        }
+        });
 
-        // Firebase Storage'a Resim Yükleme
         async function uploadImageToFirebase(file) {
             if(!file) return null;
             const fileName = new Date().getTime() + '_' + file.name;
@@ -163,69 +187,181 @@
             return await getDownloadURL(uploadTask.ref);
         }
 
-        // --- KAYDETME İŞLEMİ ---
+        // Çoklu Galeri Önizleme
+        document.getElementById('postGalleryFiles').addEventListener('change', function(e) {
+            const previewArea = document.getElementById('galleryPreview');
+            previewArea.innerHTML = '';
+            for(let i=0; i<this.files.length; i++) {
+                const file = this.files[i];
+                if(file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewArea.innerHTML += `<img src="${e.target.result}" style="height:70px; border-radius:6px; border:1px solid #ccc; object-fit:cover;">`;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+
+        // Haberleri Veritabanından Çekip Tabloya Diz
+        async function loadPosts() {
+            const tbody = document.getElementById('postsTableBody');
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center;">Haberler yükleniyor...</td></tr>';
+            try {
+                const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                allPostsData = [];
+                tbody.innerHTML = '';
+                querySnapshot.forEach((docSnap) => {
+                    const post = { id: docSnap.id, ...docSnap.data() };
+                    allPostsData.push(post);
+                    tbody.innerHTML += `
+                        <tr style="border-bottom:1px solid var(--border);">
+                            <td style="padding:16px; font-weight:600; color:var(--text-dark);">${post.title}</td>
+                            <td style="padding:16px;"><span style="background:var(--accent-light); color:var(--accent); padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">${post.category}</span></td>
+                            <td style="padding:16px; color:var(--text-muted); font-size:14px;">${post.date}</td>
+                            <td style="padding:16px; text-align:right;">
+                                <button class="btn-primary" style="padding:8px 12px; font-size:13px; margin-right:8px;" onclick="editPost('${post.id}')">✏️ Düzenle</button>
+                                <button class="btn-primary" style="padding:8px 12px; font-size:13px; background:#dc2626;" onclick="deletePost('${post.id}')">🗑️ Sil</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="4" style="color:red; text-align:center;">Hata: ${e.message}</td></tr>`;
+            }
+        }
+
+        // Haberi Sil
+        window.deletePost = async function(id) {
+            if(confirm("Bu haberi kalıcı olarak silmek istediğinize emin misiniz?")) {
+                try {
+                    await deleteDoc(doc(db, "posts", id));
+                    alert("Haber başarıyla silindi!");
+                    loadPosts(); // Tabloyu yenile
+                } catch(e) {
+                    alert("Silme hatası: " + e.message);
+                }
+            }
+        }
+
+        // Düzenleme Moduna Geç (Verileri Forma Doldur)
+        window.editPost = function(id) {
+            const post = allPostsData.find(p => p.id === id);
+            if(!post) return;
+            
+            document.getElementById('formMainTitle').innerText = "📝 Haberi Düzenle";
+            document.getElementById('editModeNotice').style.display = "block";
+            document.getElementById('publishBtn').innerText = "💾 Değişiklikleri Kaydet (Güncelle)";
+            document.getElementById('publishBtn').style.background = "#059669"; // Yeşil buton
+            
+            document.getElementById('editPostId').value = post.id;
+            document.getElementById('postTitle').value = post.title;
+            document.getElementById('postCat').value = post.category;
+            document.getElementById('postTrend').checked = post.isTrend || false;
+            document.getElementById('postHeadline').checked = post.isHeadline || false;
+            document.getElementById('postThumbLink').value = post.thumbnail || '';
+            document.getElementById('postExcerpt').value = post.excerpt || '';
+            quill.root.innerHTML = post.contentHtml || '';
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Düzenlemeyi İptal Et (Temizle)
+        window.cancelEdit = function() {
+            document.getElementById('formMainTitle').innerText = "Yeni Haber Yayımla";
+            document.getElementById('editModeNotice').style.display = "none";
+            document.getElementById('publishBtn').innerText = "🚀 Haberi Buluta Kaydet";
+            document.getElementById('publishBtn').style.background = "var(--accent)";
+            document.getElementById('editPostId').value = "";
+            
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postThumbLink').value = '';
+            document.getElementById('postExcerpt').value = '';
+            document.getElementById('postGalleryFiles').value = '';
+            document.getElementById('galleryPreview').innerHTML = '';
+            quill.root.innerHTML = '';
+        }
+
+        // Haberi Kaydet (Yeni veya Güncelleme)
         document.getElementById('publishBtn').addEventListener('click', async () => {
             const btn = document.getElementById('publishBtn');
             const alertBox = document.getElementById('statusAlert');
             const title = document.getElementById('postTitle').value;
+            const editId = document.getElementById('editPostId').value;
 
             if(!title) return alert("Başlık boş olamaz!");
 
             btn.disabled = true;
-            btn.innerHTML = '⏳ Yükleniyor... (Veriler kaydediliyor)';
+            btn.innerHTML = '⏳ Yükleniyor... (Lütfen bekleyin)';
             alertBox.style.display = 'block';
             alertBox.style.background = '#e0f2fe';
             alertBox.style.color = '#0284c7';
-            alertBox.textContent = 'İşlem başladı, lütfen bekleyin...';
+            alertBox.textContent = 'Verileriniz buluta işleniyor...';
 
             try {
-                // 1. Manşet Görselini Ayarla
+                // Manşet Görseli
                 let thumbUrl = document.getElementById('postThumbLink').value;
                 const thumbFile = document.getElementById('postThumbFile').files[0];
                 if(thumbFile) {
                     thumbUrl = await uploadImageToFirebase(thumbFile);
                 }
-                if(!thumbUrl) thumbUrl = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800"; // Varsayılan
-
-                // 2. Editör İçeriğini HTML olarak al
-                const contentHtml = quill.root.innerHTML;
-
-                // 3. Veritabanına (Firestore) Gönder
-                const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
                 
-                await addDoc(collection(db, "posts"), {
+                // Çoklu Galeri Görselleri (Eğer seçildiyse)
+                const galleryFiles = document.getElementById('postGalleryFiles').files;
+                let galleryUrls = [];
+                if(galleryFiles.length > 0) {
+                    alertBox.textContent = 'Galeri görselleri (Grid) yükleniyor...';
+                    for(let i=0; i<galleryFiles.length; i++) {
+                        const gUrl = await uploadImageToFirebase(galleryFiles[i]);
+                        if(gUrl) galleryUrls.push(gUrl);
+                    }
+                }
+
+                const postData = {
                     title: title,
                     category: document.getElementById('postCat').value,
                     isTrend: document.getElementById('postTrend').checked,
                     isHeadline: document.getElementById('postHeadline').checked,
-                    date: dateStr,
-                    createdAt: serverTimestamp(),
-                    views: 0,
-                    thumbnail: thumbUrl,
                     excerpt: document.getElementById('postExcerpt').value,
-                    contentHtml: contentHtml // YENİ: Zengin HTML İçerik
-                });
+                    contentHtml: quill.root.innerHTML
+                };
 
-                // Başarılı
+                if (thumbUrl) postData.thumbnail = thumbUrl;
+                // Eğer yeni galeri resmi yüklendiyse, üzerine yaz (eskiyi ezer).
+                if (galleryUrls.length > 0) {
+                    postData.gallery = galleryUrls;
+                }
+
+                if(editId) {
+                    // MEVCUT HABERİ GÜNCELLE
+                    await updateDoc(doc(db, "posts", editId), postData);
+                    alertBox.textContent = '✅ Haber başarıyla güncellendi!';
+                } else {
+                    // YENİ HABER EKLE
+                    postData.date = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    postData.createdAt = serverTimestamp();
+                    postData.views = 0;
+                    if(!postData.thumbnail) postData.thumbnail = "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800";
+                    if(!postData.gallery) postData.gallery = [];
+                    await addDoc(collection(db, "posts"), postData);
+                    alertBox.textContent = '✅ Haber başarıyla yayımlandı!';
+                }
+
                 alertBox.style.background = '#dcfce7';
                 alertBox.style.color = '#166534';
-                alertBox.textContent = '✅ Haberin başarıyla Firebase bulutuna kaydedildi!';
-                btn.innerHTML = 'Yeni Haber Ekle';
-                btn.disabled = false;
                 
-                // Formu temizle
-                document.getElementById('postTitle').value = '';
-                document.getElementById('postExcerpt').value = '';
-                document.getElementById('postThumbFile').value = '';
-                document.getElementById('postThumbLink').value = '';
-                quill.root.innerHTML = ''; // Editörü temizle
+                // Formu temizle ve listeyi yenile
+                cancelEdit();
+                btn.disabled = false;
+                loadPosts(); // Tabloyu anında güncelle
 
             } catch (error) {
                 console.error(error);
                 alertBox.style.background = '#fee2e2';
                 alertBox.style.color = '#991b1b';
                 alertBox.textContent = '❌ Bir hata oluştu: ' + error.message;
-                btn.innerHTML = 'Tekrar Dene';
+                btn.innerHTML = editId ? "💾 Değişiklikleri Güncelle" : "🚀 Haberi Buluta Kaydet";
                 btn.disabled = false;
             }
         });

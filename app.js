@@ -52,9 +52,16 @@ async function renderHome() {
         }
 
         // Manşetleri Ayır (isHeadline: true olanlar)
-        const headlines = (!categoryFilter && !typeFilter) ? allPosts.filter(post => post.isHeadline).slice(0, 3) : [];
+        let headlines = (!categoryFilter && !typeFilter) ? allPosts.filter(post => post.isHeadline).slice(0, 3) : [];
         // Akış Haberleri
-        const feed = (!categoryFilter && !typeFilter) ? allPosts.filter(post => !post.isHeadline) : allPosts;
+        let feed = (!categoryFilter && !typeFilter) ? allPosts.filter(post => !post.isHeadline) : allPosts;
+        
+        // Eğer manşet seçilmemişse, boşluk olmaması için son eklenen 3 haberi manşete koy ve akıştan çıkar
+        if (headlines.length === 0 && !categoryFilter && !typeFilter && allPosts.length > 0) {
+            headlines = allPosts.slice(0, 3);
+            feed = allPosts.slice(3);
+        }
+
         // En Çok Okunanlar (Trend olanlar)
         const popular = allPosts.filter(post => post.isTrend);
 
@@ -165,9 +172,17 @@ async function renderArticle() {
 
         contentArea.innerHTML = '';
 
-        // Yeni nesil WYSIWYG Editör İçeriği (Quill.js)
-        if (post.contentHtml) {
-            contentArea.innerHTML = `<div class="ql-editor">${post.contentHtml}</div>`;
+        // Yeni nesil WYSIWYG Editör İçeriği (Quill.js) ve Çoklu Galeri Grid'i
+        if (post.contentHtml || (post.gallery && post.gallery.length > 0)) {
+            let galleryHtml = '';
+            if (post.gallery && post.gallery.length > 0) {
+                galleryHtml = '<div class="post-gallery" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin: 30px 0; padding-bottom: 20px; border-bottom: 1px solid var(--border);">';
+                post.gallery.forEach(url => {
+                    galleryHtml += `<img src="${url}" style="width:100%; height:250px; object-fit:cover; border-radius:12px; box-shadow: var(--shadow-sm); cursor:pointer; transition:0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${url}','_blank')">`;
+                });
+                galleryHtml += '</div>';
+            }
+            contentArea.innerHTML = galleryHtml + `<div class="ql-editor">${post.contentHtml || ''}</div>`;
         } 
         // Eski nesil Blok Sistemi Desteği (Geriye uyumluluk)
         else if(post.blocks && Array.isArray(post.blocks)) {
