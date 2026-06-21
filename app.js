@@ -60,6 +60,12 @@ async function renderHome() {
     const searchQuery = urlParams.get('search');
     const tagFilter = urlParams.get('tag');
 
+    // Eğer herhangi bir filtre aktifse 'Geri Dön' butonunu göster
+    if(categoryFilter || typeFilter || searchQuery || tagFilter) {
+        const backBtn = document.getElementById('globalBackBtn');
+        if(backBtn) backBtn.style.display = 'inline-block';
+    }
+
     // "Yükleniyor" durumları
     heroGrid.innerHTML = '<div style="padding:40px; text-align:center;">Manşetler yükleniyor...</div>';
     postList.innerHTML = '<div style="padding:40px; text-align:center;">Haberler yükleniyor...</div>';
