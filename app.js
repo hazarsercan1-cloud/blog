@@ -163,8 +163,33 @@ async function renderHome() {
             heroGrid.innerHTML = ''; // Manşet yoksa boş bırak
         }
 
-        // 2. Haber Akışını Render Et
-        renderPostList(feed, postList);
+        // 2. Haber Akışını Render Et (Sayfalama - Pagination)
+        let visibleCount = 10;
+        
+        const renderSlice = () => {
+            const currentSlice = feed.slice(0, visibleCount);
+            renderPostList(currentSlice, postList);
+            
+            let loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (visibleCount < feed.length) {
+                if (!loadMoreBtn) {
+                    loadMoreBtn = document.createElement('button');
+                    loadMoreBtn.id = 'loadMoreBtn';
+                    loadMoreBtn.className = 'btn-primary';
+                    loadMoreBtn.style.cssText = 'width: 100%; margin-top: 24px; padding: 14px; font-size: 16px; justify-content: center; background: #e2e8f0; color: #1e293b;';
+                    loadMoreBtn.textContent = '👇 Daha Fazla Haber Yükle';
+                    loadMoreBtn.addEventListener('click', () => {
+                        visibleCount += 10;
+                        renderSlice();
+                    });
+                    postList.parentNode.appendChild(loadMoreBtn);
+                }
+            } else {
+                if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+            }
+        };
+
+        renderSlice();
 
         // 3. En Çok Okunanları Render Et
         renderPopularList(popular, popularList);
