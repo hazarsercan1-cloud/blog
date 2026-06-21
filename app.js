@@ -290,8 +290,16 @@ function initCookieBanner() {
     `;
     document.body.appendChild(banner);
 
-    document.getElementById('closeIosPrompt').addEventListener('click', () => {
-        iosPrompt.style.display = 'none';
+    document.getElementById('btnCookieAccept').addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'accepted');
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 300);
+    });
+
+    document.getElementById('btnCookieReject').addEventListener('click', () => {
+        localStorage.setItem('cookieConsent', 'rejected');
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 300);
     });
 }
 
@@ -307,7 +315,6 @@ if (hamburgerBtn && navLinks && mobileOverlay) {
         hamburgerBtn.classList.toggle('active');
         navLinks.classList.toggle('active');
         mobileOverlay.classList.toggle('active');
-        // Menü açıkken arkadaki sayfanın kaymasını engelle
         if(navLinks.classList.contains('active')) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -316,11 +323,8 @@ if (hamburgerBtn && navLinks && mobileOverlay) {
     };
 
     hamburgerBtn.addEventListener('click', toggleMenu);
-    
-    // Karartılmış alana tıklayınca menüyü kapat
     mobileOverlay.addEventListener('click', toggleMenu);
     
-    // Menü içindeki herhangi bir linke tıklanırsa da kapat
     const links = navLinks.querySelectorAll('a');
     links.forEach(link => {
         link.addEventListener('click', () => {
@@ -331,16 +335,56 @@ if (hamburgerBtn && navLinks && mobileOverlay) {
     });
 }
 
-    document.getElementById('btnCookieAccept').addEventListener('click', () => {
-        localStorage.setItem('cookieConsent', 'accepted');
-        banner.style.opacity = '0';
-        setTimeout(() => banner.remove(), 300);
-    });
+// PWA (Android) Yükleme Mantığı
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const installBtn = document.getElementById('installAppBtn');
+    if (installBtn) {
+        installBtn.style.display = 'inline-block';
+        installBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        });
+    }
+});
 
-    document.getElementById('btnCookieReject').addEventListener('click', () => {
-        localStorage.setItem('cookieConsent', 'rejected');
-        banner.style.opacity = '0';
-        setTimeout(() => banner.remove(), 300);
+// iOS (iPhone) PWA Yönlendirme Balonu Mantığı
+const isIos = () => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|ipod/.test(userAgent);
+};
+const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+if (isIos() && !isInStandaloneMode()) {
+    const iosPrompt = document.createElement('div');
+    iosPrompt.style.position = 'fixed';
+    iosPrompt.style.bottom = '20px';
+    iosPrompt.style.left = '50%';
+    iosPrompt.style.transform = 'translateX(-50%)';
+    iosPrompt.style.backgroundColor = '#ffffff';
+    iosPrompt.style.color = '#000000';
+    iosPrompt.style.padding = '15px';
+    iosPrompt.style.borderRadius = '12px';
+    iosPrompt.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+    iosPrompt.style.zIndex = '9999';
+    iosPrompt.style.width = '90%';
+    iosPrompt.style.maxWidth = '400px';
+    iosPrompt.style.textAlign = 'center';
+    iosPrompt.style.fontFamily = 'var(--font-sans)';
+    
+    iosPrompt.innerHTML = `
+        <div style="font-weight: 600; margin-bottom: 8px; font-size: 16px;">📱 Daha iyi bir deneyim için uygulamamızı yükleyin!</div>
+        <div style="font-size: 14px; margin-bottom: 12px; color: #555;">Alt menüdeki <span style="font-size: 18px;">⍗</span> <b>Paylaş</b> butonuna basıp ardından <b>Ana Ekrana Ekle</b>'yi seçin.</div>
+        <button id="closeIosPrompt" style="background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">Anladım</button>
+    `;
+    document.body.appendChild(iosPrompt);
+    
+    document.getElementById('closeIosPrompt').addEventListener('click', () => {
+        iosPrompt.style.display = 'none';
     });
 }
 
