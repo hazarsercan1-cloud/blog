@@ -290,6 +290,47 @@ function initCookieBanner() {
     `;
     document.body.appendChild(banner);
 
+    document.getElementById('closeIosPrompt').addEventListener('click', () => {
+        iosPrompt.style.display = 'none';
+    });
+}
+
+// -----------------------------------------------------------------------------
+// Mobil Hamburger Menü Mantığı
+// -----------------------------------------------------------------------------
+const hamburgerBtn = document.getElementById('hamburgerMenu');
+const navLinks = document.querySelector('.nav-links');
+const mobileOverlay = document.getElementById('mobileOverlay');
+
+if (hamburgerBtn && navLinks && mobileOverlay) {
+    const toggleMenu = () => {
+        hamburgerBtn.classList.toggle('active');
+        navLinks.classList.toggle('active');
+        mobileOverlay.classList.toggle('active');
+        // Menü açıkken arkadaki sayfanın kaymasını engelle
+        if(navLinks.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    };
+
+    hamburgerBtn.addEventListener('click', toggleMenu);
+    
+    // Karartılmış alana tıklayınca menüyü kapat
+    mobileOverlay.addEventListener('click', toggleMenu);
+    
+    // Menü içindeki herhangi bir linke tıklanırsa da kapat
+    const links = navLinks.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('click', () => {
+            if(navLinks.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+    });
+}
+
     document.getElementById('btnCookieAccept').addEventListener('click', () => {
         localStorage.setItem('cookieConsent', 'accepted');
         banner.style.opacity = '0';
