@@ -1,0 +1,25 @@
+{
+  "name": "windlevel-blog",
+  "version": "1.0.0",
+  "description": "Windlevel - Teknoloji, Dijital Yaşam ve Trendler",
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build:insights && serve .",
+    "build": "npm run build:insights",
+    "build:insights": "esbuild speed-insights.js --bundle --format=esm --outfile=speed-insights.bundle.js",
+    "lint": "echo 'No linter configured'"
+  },
+  "keywords": [
+    "blog",
+    "technology",
+    "news"
+  ],
+  "author": "Windlevel",
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/speed-insights": "^1.0.12"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  }
+}
